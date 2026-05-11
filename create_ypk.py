@@ -15,12 +15,13 @@ import sys
 
 TEMPLATE = Path("Empty Model.ypk")
 SCRIPT_FOLDER = Path("script")
+ART_FOLDER = Path("art")
 DB_FILE = Path("Custom-Cards.cdb")
 TEST_STRINGS = Path("test-strings.conf")
 FINAL_NAME = Path("OmegaCustom.ypk")
 
 
-def build_ypk(template: Path, output: Path, script_dir: Path, db: Path, test_strings: Path):
+def build_ypk(template: Path, output: Path, script_dir: Path, art_dir: Path, db: Path, test_strings: Path):
 	if not template.exists():
 		raise FileNotFoundError(f"Template not found: {template}")
 
@@ -36,6 +37,8 @@ def build_ypk(template: Path, output: Path, script_dir: Path, db: Path, test_str
 			name = item.filename
 			low = name.lower()
 			if low.startswith('script/'):
+				continue
+			if low.startswith('pics/'):
 				continue
 			if low == 'custom.cdb':
 				continue
@@ -68,10 +71,20 @@ def build_ypk(template: Path, output: Path, script_dir: Path, db: Path, test_str
 		else:
 			print(f"Warning: script folder not found: {script_dir} (no scripts added)")
 
+		# Add all files from art_dir into the pics/ folder inside the archive
+		if art_dir.exists() and art_dir.is_dir():
+			for p in sorted(art_dir.rglob('*')):
+				if p.is_file():
+					arcname = Path('pics') / p.relative_to(art_dir)
+					print(f"Adding art file {p} -> {arcname}")
+					zout.write(str(p), arcname=str(arcname).replace('\\', '/'))
+		else:
+			print(f"Warning: art folder not found: {art_dir} (no art added)")
+
 
 def main():
 	try:
-		build_ypk(TEMPLATE, FINAL_NAME, SCRIPT_FOLDER, DB_FILE, TEST_STRINGS)
+		build_ypk(TEMPLATE, FINAL_NAME, SCRIPT_FOLDER, ART_FOLDER, DB_FILE, TEST_STRINGS)
 		print(f"Built YPK: {FINAL_NAME}")
 	except Exception as e:
 		print(f"Error: {e}")
