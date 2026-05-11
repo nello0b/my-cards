@@ -27,7 +27,7 @@ function s.negcon(e,tp,eg,ep,ev,re,r,rp)
 	return re:IsHasType(EFFECT_TYPE_ACTIVATE) and Duel.IsChainNegatable(ev)
 end
 function s.negfilter(c)
-	return c:IsSetCard(0x3a) and c:IsType(TYPE_RITUAL) and c:IsType(TYPE_MONSTER) and c:IsAbleToHand() and c:IsFaceup()
+	return c:IsSetCard(0x3a) and c:IsType(TYPE_RITUAL) and c:IsAbleToHand() and c:IsFaceup()
 end
 function s.negtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local rc=re:GetHandler()
