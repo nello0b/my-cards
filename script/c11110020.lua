@@ -3,7 +3,6 @@ local s,id=GetID()
 function s.initial_effect(c)
 	--return to negate and shuffle
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_NEGATE+CATEGORY_TODECK)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_CHAINING)
@@ -16,7 +15,8 @@ function s.initial_effect(c)
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))
 	e2:SetCategory(CATEGORY_TOGRAVE)
-	e2:SetType(EFFECT_TYPE_IGNITION)
+	e2:SetType(EFFECT_TYPE_QUICK_O)
+	e2:SetCode(EVENT_FREE_CHAIN)
 	e2:SetRange(LOCATION_GRAVE)
 	e2:SetCountLimit(1,id)
 	e2:SetCost(aux.bfgcost)
@@ -53,26 +53,30 @@ function s.negop(e,tp,eg,ep,ev,re,r,rp)
 	end
 end
 function s.cpfilter(c)
-	return c:GetType()==TYPE_SPELL+TYPE_RITUAL and c:IsAbleToGraveAsCost() and c:CheckActivateEffect(true,true,false)~=nil
+	return c:IsSetCard(0x3a) and c:IsType(TYPE_SPELL+TYPE_RITUAL) and c:IsAbleToGraveAsCost()
+		and c:CheckActivateEffect(true,true,true)~=nil
 end
 function s.cptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(s.cpfilter,tp,LOCATION_HAND+LOCATION_DECK,0,1,nil) end
-	e:SetLabel(1)
-	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_HAND+LOCATION_DECK)
-end
-function s.cpop(e,tp,eg,ep,ev,re,r,rp)
-	if e:GetLabel()==0 then return end
-	e:SetLabel(0)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)
 	local g=Duel.SelectMatchingCard(tp,s.cpfilter,tp,LOCATION_HAND+LOCATION_DECK,0,1,1,nil)
-	if g:GetCount()==0 then return end
-	local te=g:GetFirst():CheckActivateEffect(true,true,false)
-	e:SetLabelObject(te)
-	Duel.SendtoGrave(g,REASON_COST)
+	local tc=g:GetFirst()
+	if not tc then return end
+	local te,ceg,cep,cev,cre,cr,crp=tc:CheckActivateEffect(true,true,true)
+	if not te then return end
+	Duel.SendtoGrave(tc,REASON_COST)
 	e:SetProperty(te:GetProperty())
 	local tg=te:GetTarget()
-	if tg then tg(e,tp,eg,ep,ev,re,r,rp,1) end
+	if tg then tg(e,tp,ceg,cep,cev,cre,cr,crp,1) end
+	te:SetLabelObject(e:GetLabelObject())
+	e:SetLabelObject(te)
 	Duel.ClearOperationInfo(0)
-	local op=te:GetOperation()
-	if op then op(e,tp,eg,ep,ev,re,r,rp) end
+end
+function s.cpop(e,tp,eg,ep,ev,re,r,rp)
+	local te=e:GetLabelObject()
+	if te then
+		e:SetLabelObject(te:GetLabelObject())
+		local op=te:GetOperation()
+		if op then op(e,tp,eg,ep,ev,re,r,rp) end
+	end
 end
