@@ -68,4 +68,12 @@ function s.cpop(e,tp,eg,ep,ev,re,r,rp)
 	local tg=te:GetTarget()
 	if tg then tg(e,tp,eg,ep,ev,re,r,rp,1) end
 	Duel.ClearOperationInfo(0)
+    local op=te:GetOperation()
+	if op then op(e,tp,eg,ep,ev,re,r,rp) end
+end
+function s.rsop(e,tp,eg,ep,ev,re,r,rp)
+	local te=e:GetLabelObject()
+	if not te then return end
+	local op=te:GetOperation()
+	if op then op(e,tp,eg,ep,ev,re,r,rp) end
 end
