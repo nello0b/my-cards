@@ -58,7 +58,7 @@ end
 function s.rscon(e,tp,eg,ep,ev,re,r,rp)
 	return Duel.GetCurrentPhase()==PHASE_MAIN1 or Duel.GetCurrentPhase()==PHASE_MAIN2
 end
-function c47106439.rlevel(e,c)
+function s.rlevel(e,c)
 	local lv=aux.GetCappedLevel(e:GetHandler())
 	if c:IsAttribute(ATTRIBUTE_WATER) then
 		local clv=c:GetLevel()
