@@ -6,7 +6,8 @@ function s.initial_effect(c)
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_COUNTER)
-	e1:SetType(EFFECT_TYPE_QUICK_O)
+	e1:SetTy
+	pe(EFFECT_TYPE_QUICK_O)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetRange(LOCATION_HAND)
 	e1:SetHintTiming(0,TIMINGS_CHECK_MONSTER+TIMING_MAIN_END)
@@ -70,14 +71,14 @@ function s.negcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return c:IsCanRemoveCounter(tp,0x1f,1,REASON_COST) end
 	c:RemoveCounter(tp,0x1f,1,REASON_COST)
 end
-function s.negfilter(c)
-	return c:IsFaceup() and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsCanBeDisabledByEffect(nil,false)
+function s.negfilter(c,e)
+	return c:IsFaceup() and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsCanBeDisabledByEffect(e,false)
 end
 function s.negtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and chkc:IsControler(1-tp) and s.negfilter(chkc) end
-	if chk==0 then return Duel.IsExistingTarget(s.negfilter,tp,0,LOCATION_ONFIELD,1,nil) end
+	if chk==0 then return Duel.IsExistingTarget(s.negfilter,tp,0,LOCATION_ONFIELD,1,nil,e) end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISABLE)
-	Duel.SelectTarget(tp,s.negfilter,tp,0,LOCATION_ONFIELD,1,1,nil)
+	Duel.SelectTarget(tp,s.negfilter,tp,0,LOCATION_ONFIELD,1,1,nil,e)
 end
 function s.negop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
@@ -99,14 +100,14 @@ function s.drfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x15) and c:IsType(TYPE_MONSTER)
 end
 function s.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	local ct=Duel.GetMatchingGroupCount(s.drfilter,tp,LOCATION_MZONE,0,nil)
-	if chk==0 then return ct>0 and Duel.IsPlayerCanDraw(tp,ct) end
+	if chk==0 then return Duel.IsExistingMatchingCard(s.drfilter,tp,LOCATION_MZONE,0,1,nil) and Duel.IsPlayerCanDraw(tp,1) end
 	Duel.SetTargetPlayer(tp)
-	Duel.SetTargetParam(ct)
-	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,ct)
+	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,0)
 end
 function s.drop(e,tp,eg,ep,ev,re,r,rp)
-	local p,ct=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
+	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)
+	local ct=Duel.GetMatchingGroupCount(s.drfilter,p,LOCATION_MZONE,0,nil)
 	if ct==0 then return end
+	if not Duel.IsPlayerCanDraw(p,ct) then return end
 	Duel.Draw(p,ct,REASON_EFFECT)
 end
