@@ -16,31 +16,42 @@ function s.initial_effect(c)
 	e1:SetTarget(s.sptg)
 	e1:SetOperation(s.spop)
 	c:RegisterEffect(e1)
-	--Negate a face-up Spell/Trap
+	--Place 3 counters on this card when it is Summoned
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,1))
-	e2:SetCategory(CATEGORY_DISABLE)
-	e2:SetType(EFFECT_TYPE_QUICK_O)
-	e2:SetProperty(EFFECT_FLAG_CARD_TARGET)
-	e2:SetCode(EVENT_FREE_CHAIN)
-	e2:SetRange(LOCATION_MZONE)
-	e2:SetHintTiming(0,TIMINGS_CHECK_MONSTER+TIMING_END_PHASE)
-	e2:SetCountLimit(1,id+1)
-	e2:SetCost(s.negcost)
-	e2:SetTarget(s.negtg)
-	e2:SetOperation(s.negop)
+	e2:SetCategory(CATEGORY_COUNTER)
+	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
+	e2:SetCode(EVENT_SUMMON_SUCCESS)
+	e2:SetTarget(s.cttg)
+	e2:SetOperation(s.ctop)
 	c:RegisterEffect(e2)
-	--Draw if sent to the GY
-	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(id,2))
-	e3:SetCategory(CATEGORY_DRAW)
-	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
-	e3:SetProperty(EFFECT_FLAG_DELAY)
-	e3:SetCode(EVENT_TO_GRAVE)
-	e3:SetCountLimit(1,id+2)
-	e3:SetTarget(s.drtg)
-	e3:SetOperation(s.drop)
+	local e3=e2:Clone()
+	e3:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e3)
+	--Negate a face-up Spell/Trap
+	local e4=Effect.CreateEffect(c)
+	e4:SetDescription(aux.Stringid(id,1))
+	e4:SetCategory(CATEGORY_DISABLE)
+	e4:SetType(EFFECT_TYPE_QUICK_O)
+	e4:SetProperty(EFFECT_FLAG_CARD_TARGET)
+	e4:SetCode(EVENT_FREE_CHAIN)
+	e4:SetRange(LOCATION_MZONE)
+	e4:SetHintTiming(0,TIMINGS_CHECK_MONSTER+TIMING_END_PHASE)
+	e4:SetCountLimit(1,id+1)
+	e4:SetCost(s.negcost)
+	e4:SetTarget(s.negtg)
+	e4:SetOperation(s.negop)
+	c:RegisterEffect(e4)
+	--Draw if sent to the GY
+	local e5=Effect.CreateEffect(c)
+	e5:SetDescription(aux.Stringid(id,2))
+	e5:SetCategory(CATEGORY_DRAW)
+	e5:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
+	e5:SetProperty(EFFECT_FLAG_DELAY)
+	e5:SetCode(EVENT_TO_GRAVE)
+	e5:SetCountLimit(1,id+2)
+	e5:SetTarget(s.drtg)
+	e5:SetOperation(s.drop)
+	c:RegisterEffect(e5)
 end
 function s.cfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x15) and c:IsType(TYPE_MONSTER)
@@ -62,6 +73,18 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	if Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)==0 then return end
 	if c:IsCanAddCounter(0x1f,3) then
 		Duel.BreakEffect()
+		c:AddCounter(0x1f,3)
+	end
+end
+
+function s.cttg(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return true end
+	Duel.SetOperationInfo(0,CATEGORY_COUNTER,nil,3,0,0x1f)
+end
+
+function s.ctop(e,tp,eg,ep,ev,re,r,rp)
+	local c=e:GetHandler()
+	if c:IsRelateToEffect(e) then
 		c:AddCounter(0x1f,3)
 	end
 end
@@ -100,9 +123,10 @@ function s.drfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x15) and c:IsType(TYPE_MONSTER)
 end
 function s.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.IsExistingMatchingCard(s.drfilter,tp,LOCATION_MZONE,0,1,nil) and Duel.IsPlayerCanDraw(tp,1) end
+	if chk==0 then return Duel.IsPlayerCanDraw(tp,1) end
 	Duel.SetTargetPlayer(tp)
-	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,0)
+	local ct=Duel.GetMatchingGroupCount(s.drfilter,tp,LOCATION_MZONE,0,nil)
+	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,ct,tp,0)
 end
 function s.drop(e,tp,eg,ep,ev,re,r,rp)
 	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)

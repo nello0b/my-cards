@@ -21,22 +21,34 @@ function s.initial_effect(c)
 	local e1b=e1:Clone()
 	e1b:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e1b)
+
+	--Place 3 counters on this card when it is Summoned
+	local e2=Effect.CreateEffect(c)
+	e2:SetCategory(CATEGORY_COUNTER)
+	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
+	e2:SetCode(EVENT_SUMMON_SUCCESS)
+	e2:SetTarget(s.cttg)
+	e2:SetOperation(s.ctop)
+	c:RegisterEffect(e2)
+	local e3=e2:Clone()
+	e3:SetCode(EVENT_SPSUMMON_SUCCESS)
+	c:RegisterEffect(e3)
 	
 
 	-- If this card is Normal or Special Summoned: Set 1 "Boss Rush" (66947414) or 1 Spell/Trap that mentions it, from the Deck.
-	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,1))
-	e2:SetCategory(CATEGORY_SSET)
-	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
-	e2:SetCode(EVENT_SUMMON_SUCCESS)
-	e2:SetProperty(EFFECT_FLAG_DELAY)
-	e2:SetCountLimit(1,id+o)
-	e2:SetTarget(s.settg)
-	e2:SetOperation(s.setop)
-	c:RegisterEffect(e2)
-	local e2b=e2:Clone()
-	e2b:SetCode(EVENT_SPSUMMON_SUCCESS)
-	c:RegisterEffect(e2b)
+	local e4=Effect.CreateEffect(c)
+	e4:SetDescription(aux.Stringid(id,1))
+	e4:SetCategory(CATEGORY_SSET)
+	e4:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
+	e4:SetCode(EVENT_SUMMON_SUCCESS)
+	e4:SetProperty(EFFECT_FLAG_DELAY)
+	e4:SetCountLimit(1,id+o)
+	e4:SetTarget(s.settg)
+	e4:SetOperation(s.setop)
+	c:RegisterEffect(e4)
+	local e5=e4:Clone()
+	e5:SetCode(EVENT_SPSUMMON_SUCCESS)
+	c:RegisterEffect(e5)
 end
 
 
@@ -77,4 +89,16 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
 	Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
+end
+
+function s.cttg(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return true end
+	Duel.SetOperationInfo(0,CATEGORY_COUNTER,nil,3,0,0x1f)
+end
+
+function s.ctop(e,tp,eg,ep,ev,re,r,rp)
+	local c=e:GetHandler()
+	if c:IsRelateToEffect(e) then
+		c:AddCounter(0x1f,3)
+	end
 end
