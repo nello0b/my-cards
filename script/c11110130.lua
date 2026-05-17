@@ -114,7 +114,9 @@ function s.desop(e,tp,eg,ep,ev,re,r,rp)
 	local hc=e:GetLabelObject() -- Card on field to destroy
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS)
 	if not g or #g<2 then return end
-	local tc=g:Clone():RemoveCard(hc):GetFirst() -- Resonator in GY (the target that is NOT the field target)
+	local sg=g:Clone()
+	sg:RemoveCard(hc)
+	local tc=sg:GetFirst() -- Resonator in GY (the target that is NOT the field target)
 	if hc and hc:IsRelateToEffect(e) and Duel.Destroy(hc,REASON_EFFECT)>0 then
 		if tc and tc:IsRelateToEffect(e) then
 			Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
@@ -144,7 +146,6 @@ end
 
 function s.sctg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
-		if not Duel.IsPlayerCanSpecialSummon(tp) then return false end
 		local mg=Duel.GetSynchroMaterial(tp):Filter(Card.IsLocation,nil,LOCATION_MZONE)
 		return Duel.IsExistingMatchingCard(s.spfilter2,tp,LOCATION_EXTRA,0,1,nil,tp,mg)
 	end

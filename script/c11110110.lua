@@ -29,7 +29,8 @@ function s.tdfilter(c)
 		and c:IsAbleToDeck()
 		and (c:IsLocation(LOCATION_GRAVE) or c:IsFaceup())
 end
-function s.fselect(g,e,tp)
+function s.fselect(g,lv)
+	if g:GetSum(Card.GetLevel)~=lv then return false end
 	local b=false
 	for c in aux.Next(g) do
 		if c:IsType(TYPE_SYNCHRO) then
@@ -41,39 +42,37 @@ function s.fselect(g,e,tp)
 			end
 		end
 	end
-	if not b then return false end
-	local lv=g:GetSum(Card.GetLevel)
-	return Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_EXTRA,0,1,nil,e,tp,lv)
+	return b
 end
-function s.spfilter(c,e,tp,lv)
-	return c:IsAttribute(ATTRIBUTE_DARK) and c:IsRace(RACE_DRAGON) and c:IsType(TYPE_SYNCHRO) and c:IsLevel(lv)
+function s.spfilter(c,e,tp,mg)
+	return c:IsAttribute(ATTRIBUTE_DARK) and c:IsRace(RACE_DRAGON) and c:IsType(TYPE_SYNCHRO)
 		and Duel.GetLocationCountFromEx(tp,tp,nil,c)>0
 		and c:IsCanBeSpecialSummoned(e,SUMMON_TYPE_SYNCHRO,tp,false,false)
+		and mg:CheckSubGroup(s.fselect,2,99,c:GetLevel())
 end
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
-		local g=Duel.GetMatchingGroup(s.tdfilter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,nil)
-		return g:CheckSubGroup(s.fselect,2,99,e,tp)
+		local mg=Duel.GetMatchingGroup(s.tdfilter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,nil)
+		return Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_EXTRA,0,1,nil,e,tp,mg)
 	end
-	Duel.SetOperationInfo(0,CATEGORY_TODECK,nil,2,tp,LOCATION_GRAVE+LOCATION_REMOVED)
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
+	Duel.SetOperationInfo(0,CATEGORY_TODECK,nil,2,tp,LOCATION_GRAVE+LOCATION_REMOVED)
 end
 function s.operation(e,tp,eg,ep,ev,re,r,rp)
-	local g=Duel.GetMatchingGroup(aux.NecroValleyFilter(s.tdfilter),tp,LOCATION_GRAVE+LOCATION_REMOVED,0,nil)
+	if not aux.MustMaterialCheck(nil,tp,EFFECT_MUST_BE_SMATERIAL) then return end
+	local mg=Duel.GetMatchingGroup(aux.NecroValleyFilter(s.tdfilter),tp,LOCATION_GRAVE+LOCATION_REMOVED,0,nil)
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+	local sc=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_EXTRA,0,1,1,nil,e,tp,mg):GetFirst()
+	if not sc then return end
+	local lv=sc:GetLevel()
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)
-	local sg=g:SelectSubGroup(tp,s.fselect,false,2,99,e,tp)
+	local sg=mg:SelectSubGroup(tp,s.fselect,false,2,99,lv)
 	if sg and #sg>0 then
 		Duel.HintSelection(sg)
-		local lv=sg:GetSum(Card.GetLevel)
 		if Duel.SendtoDeck(sg,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)>0 and sg:FilterCount(Card.IsLocation,nil,LOCATION_DECK+LOCATION_EXTRA)==#sg then
-			if not aux.MustMaterialCheck(nil,tp,EFFECT_MUST_BE_SMATERIAL) then return end
-			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-			local tc=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_EXTRA,0,1,1,nil,e,tp,lv):GetFirst()
-			if tc then
-				tc:SetMaterial(nil)
-				if Duel.SpecialSummon(tc,SUMMON_TYPE_SYNCHRO,tp,tp,false,false,POS_FACEUP)>0 then
-					tc:CompleteProcedure()
-				end
+			sc:SetMaterial(nil)
+			if Duel.SpecialSummon(sc,SUMMON_TYPE_SYNCHRO,tp,tp,false,false,POS_FACEUP)>0 then
+				sc:CompleteProcedure()
 			end
 		end
 	end
