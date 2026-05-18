@@ -132,8 +132,7 @@ end
 
 function s.syncheck(g,tp,syncard)
 	if not g:IsExists(Card.IsCode,1,nil,70902743) then return false end
-	local tc=g:FilterCount(Card.IsType,nil,TYPE_TUNER)
-	return syncard:IsSynchroSummonable(nil,g,#g-tc,#g-tc)
+	return syncard:IsSynchroSummonable(nil,g)
 end
 
 function s.spfilter2(c,tp,mg)
@@ -162,8 +161,7 @@ function s.scop(e,tp,eg,ep,ev,re,r,rp)
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SMATERIAL)
 		local tg=mg:SelectSubGroup(tp,s.syncheck,false,2,#mg,tp,sc)
 		if tg and #tg>0 then
-			local tc=tg:FilterCount(Card.IsType,nil,TYPE_TUNER)
-			Duel.SynchroSummon(tp,sc,nil,tg,#tg-tc,#tg-tc)
+			Duel.SynchroSummon(tp,sc,nil,tg)
 		end
 	end
 end
