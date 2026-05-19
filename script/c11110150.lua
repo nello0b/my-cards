@@ -87,13 +87,8 @@ function s.tdop(e,tp,eg,ep,ev,re,r,rp)
 	local g=Group.FromCards(c)
 	g:Merge(tg)
 	
-	if Duel.SendtoDeck(g,nil,SEQ_DECKBOTTOM,REASON_EFFECT)>0 then
-		local og=Duel.GetOperatedGroup()
-		local ct=og:FilterCount(Card.IsLocation,nil,LOCATION_DECK)
-		if ct>1 then
-			Duel.SortDeckbottom(tp,tp,ct)
-		end
-		Duel.BreakEffect()
-		Duel.Draw(tp,1,REASON_EFFECT)
-	end
+	aux.PlaceCardsOnDeckBottom(tp,g)
+	
+	Duel.BreakEffect()
+	Duel.Draw(tp,1,REASON_EFFECT)
 end
