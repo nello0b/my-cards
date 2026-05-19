@@ -63,10 +63,7 @@ function s.cfilter(c)
 	return c:IsPreviousLocation(LOCATION_MZONE) and c:IsReason(REASON_EFFECT)
 end
 function s.setcon(e,tp,eg,ep,ev,re,r,rp)
-	if not re then return false end
-	local rc=re:GetHandler()
-	return rp==tp and re:IsActiveType(TYPE_TRAP) and rc:GetOriginalType()==TYPE_TRAP 
-		and not re:IsActiveType(TYPE_CONTINUOUS+TYPE_COUNTER)
+	return re and rp==tp and re:IsActiveType(TYPE_TRAP) and re:GetHandler():GetOriginalType()==TYPE_TRAP
 		and eg:IsExists(s.cfilter,1,nil)
 end
 function s.settg(e,tp,eg,ep,ev,re,r,rp,chk)
