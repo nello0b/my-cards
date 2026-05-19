@@ -50,7 +50,7 @@ function s.operation(e,tp,eg,ep,ev,re,r,rp)
 	if not tc or not tc:IsRelateToEffect(e) then return end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)
 	local g=Duel.SelectMatchingCard(tp,s.deckfilter,tp,LOCATION_DECK,0,1,1,nil,tc:GetCode())
-	if #g>0 and Duel.SendtoGrave(g,REASON_EFFECT)>0 then
+	if Duel.SendtoGrave(g,REASON_EFFECT)>0 then
 		local og=Duel.GetOperatedGroup()
 		if og:GetFirst():IsLocation(LOCATION_GRAVE) then
 			Duel.BreakEffect()

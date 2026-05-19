@@ -42,7 +42,7 @@ end
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
 	local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK,0,2,2,nil)
-	if #g==2 and Duel.SendtoHand(g,nil,REASON_EFFECT)>0 then
+	if g:GetCount()==2 and Duel.SendtoHand(g,nil,REASON_EFFECT)>0 then
 		Duel.ConfirmCards(1-tp,g)
 		Duel.ShuffleHand(tp)
 		Duel.BreakEffect()
@@ -74,20 +74,26 @@ function s.tdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 		and Duel.IsPlayerCanDraw(tp,1) end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)
 	local g=Duel.SelectTarget(tp,s.tdfilter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,2,2,c)
-	g:AddCard(c)
-	Duel.SetOperationInfo(0,CATEGORY_TODECK,g,#g,0,0)
+	local tg=g:Clone()
+	tg:AddCard(c)
+	Duel.SetOperationInfo(0,CATEGORY_TODECK,tg,tg:GetCount(),0,0)
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
 function s.tdop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	if not c:IsRelateToEffect(e) then return end
-	local tg=Duel.GetTargetCards(e)
-	if #tg~=2 then return end
+	if not c:IsRelateToEffect(e) or not aux.NecroValleyFilter()(c) then return end
+	local tg=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(Card.IsRelateToEffect,nil,e):Filter(aux.NecroValleyFilter(aux.TRUE),nil)
+	if tg:GetCount()~=2 then return end
 	local g=Group.FromCards(c)
 	g:Merge(tg)
 	
-	aux.PlaceCardsOnDeckBottom(tp,g)
-	
-	Duel.BreakEffect()
-	Duel.Draw(tp,1,REASON_EFFECT)
+	if Duel.SendtoDeck(g,nil,SEQ_DECKBOTTOM,REASON_EFFECT)>0 then
+		local og=Duel.GetOperatedGroup()
+		local ct=og:FilterCount(Card.IsLocation,nil,LOCATION_DECK)
+		if ct>1 then
+			Duel.SortDeckbottom(tp,tp,ct)
+		end
+		Duel.BreakEffect()
+		Duel.Draw(tp,1,REASON_EFFECT)
+	end
 end

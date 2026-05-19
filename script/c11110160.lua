@@ -96,11 +96,11 @@ function s.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local max_targets = math.min(count, Duel.GetMatchingGroupCount(nil,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,nil))
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)
 	local g=Duel.SelectTarget(tp,nil,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,max_targets,nil)
-	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,#g,0,0)
+	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
 function s.desop(e,tp,eg,ep,ev,re,r,rp)
 	local g=Duel.GetTargetCards(e)
-	if #g>0 then
+	if g:GetCount()>0 then
 		Duel.Destroy(g,REASON_EFFECT)
 	end
 end
@@ -118,7 +118,7 @@ end
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
 	local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK,0,1,1,nil)
-	if #g>0 then
+	if g:GetCount()>0 then
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
 		Duel.ConfirmCards(1-tp,g)
 	end
