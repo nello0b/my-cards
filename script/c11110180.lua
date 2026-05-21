@@ -40,7 +40,7 @@ end
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
 		local chkf=tp
-		local mg1=Duel.GetFusionMaterial(tp)
+		local mg1=Duel.GetFusionMaterial(tp):Filter(s.filter1,nil,e)
 		local res=Duel.IsExistingMatchingCard(s.filter2,tp,LOCATION_EXTRA,0,1,nil,e,tp,mg1,nil,chkf)
 		if not res then
 			local ce=Duel.GetChainMaterial(tp)
@@ -58,47 +58,53 @@ end
 function s.activate(e,tp,eg,ep,ev,re,r,rp)
 	local chkf=tp
 	local mg1=Duel.GetFusionMaterial(tp):Filter(s.filter1,nil,e)
+	local sg1=Duel.GetMatchingGroup(s.filter2,tp,LOCATION_EXTRA,0,nil,e,tp,mg1,nil,chkf)
 	local mg2=nil
-	local mf=nil
+	local sg2=nil
 	local ce=Duel.GetChainMaterial(tp)
 	if ce~=nil then
 		local fgroup=ce:GetTarget()
 		mg2=fgroup(ce,e,tp)
-		mf=ce:GetValue()
+		local mf=ce:GetValue()
+		sg2=Duel.GetMatchingGroup(s.filter2,tp,LOCATION_EXTRA,0,nil,e,tp,mg2,mf,chkf)
 	end
-	local mg=mg1:Clone()
-	if mg2 then mg:Merge(mg2) end
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-	local g=Duel.SelectMatchingCard(tp,s.filter2,tp,LOCATION_EXTRA,0,1,1,nil,e,tp,mg,mf,chkf)
-	local tc=g:GetFirst()
-	if tc then
-		local mat=nil
-		if not mf or tc:IsSetCard(0x9b) then
-			mat=Duel.SelectFusionMaterial(tp,tc,mg,nil,chkf)
-			tc:SetMaterial(mat)
-			local mat_melodious_count=mat:FilterCount(Card.IsSetCard,nil,0x9b)
-			Duel.SendtoGrave(mat,REASON_EFFECT+REASON_MATERIAL+REASON_FUSION)
+	if #sg1>0 or (sg2~=nil and #sg2>0) then
+		local sg=sg1:Clone()
+		if sg2 then sg:Merge(sg2) end
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+		local tg=sg:Select(tp,1,1,nil)
+		local tc=tg:GetFirst()
+		if sg1:IsContains(tc) and (sg2==nil or not sg2:IsContains(tc) or ce and not Duel.SelectYesNo(tp,ce:GetDescription())) then
+			local mat1=Duel.SelectFusionMaterial(tp,tc,mg1,nil,chkf)
+			tc:SetMaterial(mat1)
+			local mat_count=mat1:FilterCount(Card.IsSetCard,nil,0x9b)
+			Duel.SendtoGrave(mat1,REASON_EFFECT+REASON_MATERIAL+REASON_FUSION)
 			Duel.BreakEffect()
 			if Duel.SpecialSummon(tc,SUMMON_TYPE_FUSION,tp,tp,false,false,POS_FACEUP)~=0 then
 				tc:CompleteProcedure()
-				s.negop_extra(e,tp,tc,mat_melodious_count)
+				if mat_count>0 then
+					s.negop_extra(e,tp,tc,mat_count)
+				end
 			end
-		else
-			mat=Duel.SelectFusionMaterial(tp,tc,mg2,nil,chkf)
+		elseif ce~=nil then
+			local mat2=Duel.SelectFusionMaterial(tp,tc,mg2,nil,chkf)
+			local mat_count=mat2:FilterCount(Card.IsSetCard,nil,0x9b)
 			local fop=ce:GetOperation()
-			fop(ce,e,tp,tc,mat)
+			fop(ce,e,tp,tc,mat2)
 			tc:CompleteProcedure()
-			local mat_melodious_count=mat:FilterCount(Card.IsSetCard,nil,0x9b)
-			s.negop_extra(e,tp,tc,mat_melodious_count)
+			if mat_count>0 then
+				s.negop_extra(e,tp,tc,mat_count)
+			end
 		end
 	end
 end
 function s.negop_extra(e,tp,tc,count)
 	local ng=Duel.GetMatchingGroup(Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
-	if count>0 and #ng>0 and Duel.SelectYesNo(tp,aux.Stringid(id,2)) then
+	if #ng>0 and Duel.SelectYesNo(tp,aux.Stringid(id,2)) then
 		Duel.BreakEffect()
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_NEGATE)
 		local sg=ng:Select(tp,1,count,nil)
+		Duel.HintSelection(sg)
 		for nc in aux.Next(sg) do
 			local e1=Effect.CreateEffect(e:GetHandler())
 			e1:SetType(EFFECT_TYPE_SINGLE)
@@ -115,7 +121,7 @@ function s.negop_extra(e,tp,tc,count)
 end
 
 function s.tdfilter(c)
-	return c:IsSetCard(0x9b) and c:IsAbleToDeck()
+	return c:IsSetCard(0x9b) and c:IsType(TYPE_MONSTER) and c:IsAbleToDeck()
 end
 function s.tdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE+LOCATION_REMOVED) and chkc:IsControler(tp) and s.tdfilter(chkc) end
@@ -123,18 +129,18 @@ function s.tdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 		and Duel.IsExistingTarget(s.tdfilter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,5,nil) end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)
 	local g=Duel.SelectTarget(tp,s.tdfilter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,5,nil)
-	Duel.SetOperationInfo(0,CATEGORY_TODECK,g,g:GetCount()+1,tp,LOCATION_GRAVE)
+	Duel.SetOperationInfo(0,CATEGORY_TODECK,g,#g+1,tp,LOCATION_GRAVE)
 end
 function s.tdop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(Card.IsRelateToEffect,nil,e)
 	if c:IsRelateToEffect(e) then
 		g:AddCard(c)
-		if g:GetCount()>0 and Duel.SendtoDeck(g,nil,SEQ_DECKBOTTOM,REASON_EFFECT)~=0 then
-			local og=Duel.GetOperatedGroup():Filter(Card.IsLocation,nil,LOCATION_DECK)
-			if og:GetCount()>1 then
-				Duel.SortDeckbottom(tp,tp,og:GetCount())
-			end
+	end
+	if #g>0 and Duel.SendtoDeck(g,nil,SEQ_DECKBOTTOM,REASON_EFFECT)~=0 then
+		local og=Duel.GetOperatedGroup():Filter(Card.IsLocation,nil,LOCATION_DECK)
+		if #og>1 then
+			Duel.SortDeckbottom(tp,tp,#og)
 		end
 	end
 end
