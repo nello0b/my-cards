@@ -67,7 +67,7 @@ function s.splimit(e,c,sump,sumtype,sumpos,targetp,se)
 end
 
 function s.negcon(e,tp,eg,ep,ev,re,r,rp)
-	return (re:IsActiveType(TYPE_SPELL) or re:IsActiveType(TYPE_TRAP))
+	return rp~=tp and (re:IsActiveType(TYPE_SPELL) or re:IsActiveType(TYPE_TRAP))
 		and Duel.IsChainNegatable(ev)
 		and Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsSetCard,0x9b),tp,LOCATION_MZONE,0,3,nil)
 end
