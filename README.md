@@ -5,7 +5,10 @@ This folder contains a custom card pack (database + scripts) and a built `.ypk` 
 ## Download
 
 - Direct `.ypk` link:
-  - https://github.com/nello0b/my-cards/raw/refs/heads/main/OmegaCustom.ypk
+
+```link
+https://github.com/nello0b/my-cards/raw/refs/heads/main/OmegaCustom.ypk
+```
 
 ## Install
 
