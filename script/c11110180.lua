@@ -126,7 +126,7 @@ end
 function s.tdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE+LOCATION_REMOVED) and chkc:IsControler(tp) and s.tdfilter(chkc) end
 	if chk==0 then return e:GetHandler():IsAbleToDeck()
-		and Duel.IsExistingTarget(s.tdfilter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,5,nil) end
+		and Duel.IsExistingTarget(s.tdfilter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,nil) end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)
 	local g=Duel.SelectTarget(tp,s.tdfilter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,5,nil)
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,g,#g+1,tp,LOCATION_GRAVE)
@@ -137,10 +137,7 @@ function s.tdop(e,tp,eg,ep,ev,re,r,rp)
 	if c:IsRelateToEffect(e) then
 		g:AddCard(c)
 	end
-	if #g>0 and Duel.SendtoDeck(g,nil,SEQ_DECKBOTTOM,REASON_EFFECT)~=0 then
-		local og=Duel.GetOperatedGroup():Filter(Card.IsLocation,nil,LOCATION_DECK)
-		if #og>1 then
-			Duel.SortDeckbottom(tp,tp,#og)
-		end
+	if #g>0 then
+		aux.PlaceCardsOnDeckBottom(tp,g)
 	end
 end
