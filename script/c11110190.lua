@@ -34,12 +34,13 @@ function s.initial_effect(c)
 	e4:SetProperty(EFFECT_FLAG_DELAY)
 	e4:SetCode(EVENT_TO_GRAVE)
 	e4:SetCountLimit(1,id+o*2)
-	e4:SetCondition(s.thcon)
+	e4:SetCondition(s.thcon_gy)
 	e4:SetTarget(s.thtg)
 	e4:SetOperation(s.thop)
 	c:RegisterEffect(e4)
 	local e5=e4:Clone()
 	e5:SetCode(EVENT_REMOVE)
+	e5:SetCondition(s.thcon_rm)
 	c:RegisterEffect(e5)
 end
 s.listed_series={0x1db}
@@ -129,9 +130,16 @@ function s.fsop(e,tp,eg,ep,ev,re,r,rp)
 end
 
 --Effect 3: Add to hand
-function s.thcon(e,tp,eg,ep,ev,re,r,rp)
+function s.ftmonfilter(c)
+	return c:IsFaceup() and c:IsSetCard(0x1db)
+end
+function s.thcon_gy(e,tp,eg,ep,ev,re,r,rp)
 	return not e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD)
-		and Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsSetCard,0x1db),tp,LOCATION_MZONE,0,1,nil)
+		and Duel.IsExistingMatchingCard(s.ftmonfilter,tp,LOCATION_MZONE,0,1,nil)
+end
+function s.thcon_rm(e,tp,eg,ep,ev,re,r,rp)
+	return e:GetHandler():IsFaceup()
+		and Duel.IsExistingMatchingCard(s.ftmonfilter,tp,LOCATION_MZONE,0,1,nil)
 end
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
