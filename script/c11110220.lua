@@ -1,8 +1,9 @@
 -- The Fabled Waira
 local s,id,o=GetID()
 function s.initial_effect(c)
+	--synchro summon
+	aux.AddSynchroProcedure(c,aux.FilterBoolFunction(Card.IsSetCard,0x35),aux.NonTuner(nil),1)
 	c:EnableReviveLimit()
-	Synchro.AddProcedure(c,aux.FilterBoolFunction(Card.IsSetCard,0x35),1,1,Synchro.NonTuner(nil),1,99)
 	--If this card is Special Summoned: destroy up to # of "Fabled" monsters discarded this turn
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
