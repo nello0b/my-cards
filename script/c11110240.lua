@@ -23,7 +23,7 @@ function s.initial_effect(c)
 	--If a card(s) is sent from your hand to the GY, while this card is in your GY: Set this card, banish when it leaves
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,1))
-	e3:SetCategory(CATEGORY_SSET)
+	e3:SetCategory(CATEGORY_LEAVE_GRAVE+CATEGORY_SSET)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e3:SetProperty(EFFECT_FLAG_DELAY)
 	e3:SetCode(EVENT_TO_GRAVE)
@@ -94,16 +94,17 @@ function s.negop(e,tp,eg,ep,ev,re,r,rp)
 	end
 end
 
-function s.handtgfilter(c,tp)
-	return c:GetPreviousControler()==tp and c:IsPreviousLocation(LOCATION_HAND)
-end
 function s.setcon(e,tp,eg,ep,ev,re,r,rp)
 	if Duel.IsDamageStep() then return false end
-	return eg:IsExists(s.handtgfilter,1,nil,tp)
+	return eg:IsExists(s.cfilter,1,nil,tp) and not eg:IsContains(e:GetHandler())
+end
+function s.cfilter(c,tp)
+	return c:IsPreviousLocation(LOCATION_HAND) and c:IsPreviousControler(tp)
 end
 function s.settg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsSSetable() end
 	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,e:GetHandler(),1,0,0)
+	Duel.SetOperationInfo(0,CATEGORY_SSET,e:GetHandler(),1,0,0)
 end
 function s.setop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
