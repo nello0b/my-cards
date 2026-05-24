@@ -95,7 +95,8 @@ function s.negop(e,tp,eg,ep,ev,re,r,rp)
 end
 
 function s.setcon(e,tp,eg,ep,ev,re,r,rp)
-	if Duel.IsDamageStep() then return false end
+	local ph=Duel.GetCurrentPhase()
+	if ph==PHASE_DAMAGE or ph==PHASE_DAMAGE_CAL then return false end
 	return eg:IsExists(s.cfilter,1,nil,tp) and not eg:IsContains(e:GetHandler())
 end
 function s.cfilter(c,tp)
