@@ -6,13 +6,14 @@ function s.initial_effect(c)
 	c:EnableReviveLimit()
 	--If this card is Synchro Summoned: during the End Phase, add up to 2 "Fabled" cards from your GY to your hand
 	local e1=Effect.CreateEffect(c)
+	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
 	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetProperty(EFFECT_FLAG_DELAY)
 	e1:SetCode(EVENT_SPSUMMON_SUCCESS)
+	e1:SetCountLimit(1,id+o*2)
 	e1:SetCondition(s.thcon)
-	e1:SetTarget(s.thtg)
-	e1:SetOperation(s.thop)
+	e1:SetOperation(s.operation)
 	c:RegisterEffect(e1)
 	--Once per turn, when your opponent activates a Spell/Trap Card or effect (Quick Effect): discard 2; negate, destroy
 	local e2=Effect.CreateEffect(c)
@@ -49,33 +50,23 @@ end
 function s.thfilter(c)
 	return c:IsSetCard(0x35) and c:IsAbleToHand()
 end
-function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.IsExistingMatchingCard(aux.NecroValleyFilter(s.thfilter),tp,LOCATION_GRAVE,0,1,nil) end
-end
-function s.thop(e,tp,eg,ep,ev,re,r,rp)
-	local c=e:GetHandler()
-	local e1=Effect.CreateEffect(c)
-	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
+function s.operation(e,tp,eg,ep,ev,re,r,rp)
+	local e1=Effect.CreateEffect(e:GetHandler())
+	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e1:SetCode(EVENT_PHASE+PHASE_END)
+	e1:SetCountLimit(1)
+	e1:SetOperation(s.thop)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	e1:SetLabel(tp)
-	e1:SetTarget(s.epthtg)
-	e1:SetOperation(s.epthop)
 	Duel.RegisterEffect(e1,tp)
 end
-function s.epthtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	local p=e:GetLabel()
-	if chk==0 then return Duel.IsExistingMatchingCard(aux.NecroValleyFilter(s.thfilter),p,LOCATION_GRAVE,0,1,nil) end
-	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,p,LOCATION_GRAVE)
-end
-function s.epthop(e,tp,eg,ep,ev,re,r,rp)
-	local p=e:GetLabel()
-	Duel.Hint(HINT_SELECTMSG,p,HINTMSG_ATOHAND)
-	local g=Duel.SelectMatchingCard(p,aux.NecroValleyFilter(s.thfilter),p,LOCATION_GRAVE,0,1,2,nil)
+function s.thop(e,tp,eg,ep,ev,re,r,rp)
+	Duel.Hint(HINT_CARD,0,id)
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
+	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.thfilter),tp,LOCATION_GRAVE,0,1,2,nil)
 	if #g>0 then
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		Duel.ConfirmCards(1-p,g)
-		Duel.ShuffleHand(p)
+		Duel.ConfirmCards(1-tp,g)
+		Duel.ShuffleHand(tp)
 	end
 end
 
