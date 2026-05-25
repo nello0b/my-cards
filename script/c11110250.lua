@@ -10,7 +10,6 @@ function s.initial_effect(c)
 	e1:SetProperty(EFFECT_FLAG_DELAY)
 	e1:SetRange(LOCATION_HAND)
 	e1:SetCountLimit(2,id)
-	e1:SetCondition(s.spcon1)
 	e1:SetTarget(s.sptg1)
 	e1:SetOperation(s.spop1)
 	c:RegisterEffect(e1)
@@ -39,10 +38,6 @@ function s.initial_effect(c)
 	e3:SetTarget(s.sctg)
 	e3:SetOperation(s.scop)
 	c:RegisterEffect(e3)
-end
-
-function s.spcon1(e,tp,eg,ep,ev,re,r,rp)
-	return Duel.GetAttacker()~=nil and Duel.GetAttackTarget()~=nil
 end
 function s.sptg1(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
