@@ -6,8 +6,8 @@ function s.initial_effect(c)
 	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
-	e1:SetCode(EVENT_DAMAGE_STEP_START)
-	e1:SetProperty(EFFECT_FLAG_DAMAGE_STEP)
+	e1:SetCode(EVENT_BATTLE_START)
+	e1:SetProperty(EFFECT_FLAG_DELAY)
 	e1:SetRange(LOCATION_HAND)
 	e1:SetCountLimit(2,id)
 	e1:SetCondition(s.spcon1)
@@ -42,7 +42,7 @@ function s.initial_effect(c)
 end
 
 function s.spcon1(e,tp,eg,ep,ev,re,r,rp)
-	return Duel.GetAttacker()~=nil
+	return Duel.GetAttacker()~=nil and Duel.GetAttackTarget()~=nil
 end
 function s.sptg1(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
