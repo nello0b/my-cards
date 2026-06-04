@@ -33,16 +33,6 @@ function s.initial_effect(c)
 	e3:SetTarget(s.sptg2)
 	e3:SetOperation(s.spop2)
 	c:RegisterEffect(e3)
-	--level change while equipped
-	local e4=Effect.CreateEffect(c)
-	e4:SetDescription(aux.Stringid(id,3))
-	e4:SetType(EFFECT_TYPE_IGNITION)
-	e4:SetRange(LOCATION_SZONE)
-	e4:SetCountLimit(1,id+3)
-	e4:SetCondition(s.lvcon)
-	e4:SetTarget(s.lvtg)
-	e4:SetOperation(s.lvop)
-	c:RegisterEffect(e4)
 
 end
 
@@ -82,9 +72,10 @@ function s.eqlimit(e,c)
 end
 
 function s.eqcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return e:GetHandler():GetEquipTarget()~=nil end
-	e:SetLabelObject(e:GetHandler():GetEquipTarget())
-	Duel.SendtoGrave(e:GetHandler(),REASON_COST)
+	local c=e:GetHandler()
+	if chk==0 then return c:GetEquipTarget()~=nil and c:IsAbleToGraveAsCost() end
+	e:SetLabelObject(c:GetEquipTarget())
+	Duel.SendtoGrave(c,REASON_COST)
 end
 
 function s.eqfilter(c)
@@ -92,7 +83,7 @@ function s.eqfilter(c)
 end
 
 function s.eqtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	local tc=e:GetLabelObject()
+	local tc=e:GetLabelObject() or e:GetHandler():GetEquipTarget()
 	if chk==0 then return tc and tc:IsFaceup() and tc:IsControler(tp)
 		and Duel.GetLocationCount(tp,LOCATION_SZONE)>0
 		and Duel.IsExistingMatchingCard(s.eqfilter,tp,LOCATION_DECK+LOCATION_GRAVE,0,2,nil) end
@@ -136,8 +127,8 @@ function s.spop2(e,tp,eg,ep,ev,re,r,rp)
 	if Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)>0 then
 		local down=c:IsLevelAbove(2)
 		local op=aux.SelectFromOptions(tp,
-			{true,aux.Stringid(id,4),1},
-			{down,aux.Stringid(id,5),-1})
+			{true,aux.Stringid(id,3),1},
+			{down,aux.Stringid(id,4),-1})
 		if not op then return end
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
@@ -146,30 +137,6 @@ function s.spop2(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetValue(op)
 		c:RegisterEffect(e1)
 	end
-end
-
-function s.lvcon(e,tp,eg,ep,ev,re,r,rp)
-	return e:GetHandler():GetEquipTarget()~=nil
-end
-
-function s.lvtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return e:GetHandler():GetLevel()>0 end
-end
-
-function s.lvop(e,tp,eg,ep,ev,re,r,rp)
-	local c=e:GetHandler()
-	if not c:IsRelateToEffect(e) then return end
-	local down=c:IsLevelAbove(2)
-	local op=aux.SelectFromOptions(tp,
-		{true,aux.Stringid(id,4),1},
-		{down,aux.Stringid(id,5),-1})
-	if not op then return end
-	local e1=Effect.CreateEffect(c)
-	e1:SetType(EFFECT_TYPE_SINGLE)
-	e1:SetCode(EFFECT_UPDATE_LEVEL)
-	e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_DISABLE)
-	e1:SetValue(op)
-	c:RegisterEffect(e1)
 end
 
 --[[
