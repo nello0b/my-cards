@@ -45,26 +45,31 @@ function s.oppfilter(c)
 	return c:IsFaceup() and c:IsType(TYPE_MONSTER) and not c:IsForbidden()
 end
 function s.eqtgfilter(c,tp)
-	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS)
-	if c:IsControler(tp) and c:IsLocation(LOCATION_GRAVE) and s.eqfilter(c) then
-		return not g or not g:IsExists(Card.IsControler,1,nil,tp)
-	end
-	if c:IsControler(1-tp) and c:IsLocation(LOCATION_MZONE) and s.oppfilter(c) then
-		return not g or not g:IsExists(Card.IsControler,1,nil,1-tp)
-	end
-	return false
+	return (c:IsControler(tp) and c:IsLocation(LOCATION_GRAVE) and s.eqfilter(c))
+		or (c:IsControler(1-tp) and c:IsLocation(LOCATION_MZONE) and s.oppfilter(c))
 end
 function s.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then
 		return s.eqtgfilter(chkc,tp)
 	end
 	local ft=Duel.GetLocationCount(tp,LOCATION_SZONE)
-	if chk==0 then return ft>0
-		and (Duel.IsExistingTarget(s.eqfilter,tp,LOCATION_GRAVE,0,1,nil)
-			or Duel.IsExistingTarget(s.oppfilter,tp,0,LOCATION_MZONE,1,nil)) end
-	local max=math.min(ft,2)
+	local b1=Duel.IsExistingTarget(s.eqfilter,tp,LOCATION_GRAVE,0,1,nil)
+	local b2=Duel.IsExistingTarget(s.oppfilter,tp,0,LOCATION_MZONE,1,nil)
+	if chk==0 then return ft>0 and (b1 or b2) end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)
-	local g=Duel.SelectTarget(tp,s.eqtgfilter,tp,LOCATION_GRAVE,LOCATION_MZONE,1,max,nil,tp)
+	local g=Duel.SelectTarget(tp,s.eqtgfilter,tp,LOCATION_GRAVE,LOCATION_MZONE,1,1,nil,tp)
+	if ft>1 then
+		local tc=g:GetFirst()
+		if tc and tc:IsLocation(LOCATION_GRAVE) and b2 and Duel.SelectYesNo(tp,aux.Stringid(id,0)) then
+			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)
+			local sg=Duel.SelectTarget(tp,s.oppfilter,tp,0,LOCATION_MZONE,1,1,nil)
+			g:Merge(sg)
+		elseif tc and tc:IsLocation(LOCATION_MZONE) and b1 and Duel.SelectYesNo(tp,aux.Stringid(id,0)) then
+			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)
+			local sg=Duel.SelectTarget(tp,s.eqfilter,tp,LOCATION_GRAVE,0,1,1,nil)
+			g:Merge(sg)
+		end
+	end
 	Duel.SetOperationInfo(0,CATEGORY_EQUIP,g,#g,0,0)
 	local gy=g:Filter(Card.IsLocation,nil,LOCATION_GRAVE)
 	if #gy>0 then
