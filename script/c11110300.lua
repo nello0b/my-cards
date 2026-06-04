@@ -125,8 +125,10 @@ function s.spop2(e,tp,eg,ep,ev,re,r,rp)
 		local down=c:IsLevelAbove(2)
 		local op=aux.SelectFromOptions(tp,
 			{true,aux.Stringid(id,3),1},
-			{down,aux.Stringid(id,4),-1})
+			{down,aux.Stringid(id,4),-1},
+			{true,aux.Stringid(id,5),0})
 		if not op then return end
+		if op==0 then return end
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_LEVEL)

@@ -73,7 +73,7 @@ function s.eqop(e,tp,eg,ep,ev,re,r,rp)
 	if not Duel.Equip(tp,tc,c,false,true) then return end
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
-	e1:SetProperty(EFFECT_FLAG_OWNER_RELATE)
+	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_OWNER_RELATE)
 	e1:SetCode(EFFECT_EQUIP_LIMIT)
 	e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 	e1:SetValue(s.eqlimit)
