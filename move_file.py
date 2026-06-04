@@ -2,7 +2,7 @@ import os
 import shutil
 
 source_dir = 'tcg-scripts'
-dest_dir = 'example-scripts'
+dest_dir = 'ref'
 copy_list_file = 'copy.txt'
 
 if not os.path.exists(dest_dir):

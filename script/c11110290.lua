@@ -1,18 +1,18 @@
 -- Dragunity Knight - Maltet
 local s,id,o=GetID()
 function s.initial_effect(c)
-    --synchro summon
+	--synchro summon
 	aux.AddSynchroProcedure(c,aux.FilterBoolFunction(Card.IsRace,RACE_DRAGON),aux.NonTuner(Card.IsRace,RACE_WINDBEAST),1)
 	c:EnableReviveLimit()
-	--treated as a non-tuner for synchro material
+	--treat as non-Tuner for a Synchro Summon
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetCode(EFFECT_NONTUNER)
-	e1:SetValue(s.tnval)
+	e1:SetValue(s.ntval)
 	c:RegisterEffect(e1)
-	--equip
+	--equip Dragunity monster from your GY and/or opponent's face-up monster
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,0))
 	e2:SetCategory(CATEGORY_LEAVE_GRAVE+CATEGORY_EQUIP)
@@ -23,7 +23,7 @@ function s.initial_effect(c)
 	e2:SetTarget(s.eqtg)
 	e2:SetOperation(s.eqop)
 	c:RegisterEffect(e2)
-	--equip self
+	--equip this card to a Dragunity monster you control
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,1))
 	e3:SetCategory(CATEGORY_EQUIP)
@@ -34,82 +34,95 @@ function s.initial_effect(c)
 	e3:SetTarget(s.eqstg)
 	e3:SetOperation(s.eqsop)
 	c:RegisterEffect(e3)
-
 end
-
-function s.tnval(e,c)
+function s.ntval(e,c)
 	return e:GetHandler():IsControler(c:GetControler())
 end
-
-function s.gyfilter(c)
-	return c:IsSetCard(0x29) and c:IsRace(RACE_DRAGON) and not c:IsForbidden()
+function s.eqfilter(c)
+	return c:IsSetCard(0x29) and c:IsType(TYPE_MONSTER) and not c:IsForbidden()
 end
-
+function s.oppfilter(c)
+	return c:IsFaceup() and c:IsType(TYPE_MONSTER) and not c:IsForbidden()
+end
 function s.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	local b1=Duel.IsExistingTarget(s.gyfilter,tp,LOCATION_GRAVE,0,1,nil)
-	local b2=Duel.IsExistingTarget(Card.IsFaceup,tp,0,LOCATION_MZONE,1,nil)
 	if chkc then
-		return (chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and s.gyfilter(chkc))
-			or (chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and chkc:IsFaceup())
+		return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and s.eqfilter(chkc)
+			or chkc:IsControler(1-tp) and chkc:IsLocation(LOCATION_MZONE) and s.oppfilter(chkc)
 	end
-	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_SZONE)>0 and (b1 or b2) end
-	if b1 then
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)
-		Duel.SelectTarget(tp,s.gyfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-		e:SetLabel(1)
-	else
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)
-		Duel.SelectTarget(tp,Card.IsFaceup,tp,0,LOCATION_MZONE,1,1,nil)
-		e:SetLabel(2)
+	local ft=Duel.GetLocationCount(tp,LOCATION_SZONE)
+	if chk==0 then return ft>0
+		and (Duel.IsExistingTarget(s.eqfilter,tp,LOCATION_GRAVE,0,1,nil)
+			or Duel.IsExistingTarget(s.oppfilter,tp,0,LOCATION_MZONE,1,nil)) end
+	local g=Group.CreateGroup()
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)
+	if ft>0 and Duel.IsExistingTarget(s.eqfilter,tp,LOCATION_GRAVE,0,1,nil)
+		and (not Duel.IsExistingTarget(s.oppfilter,tp,0,LOCATION_MZONE,1,nil) or Duel.SelectYesNo(tp,aux.Stringid(id,2))) then
+		local sg=Duel.SelectTarget(tp,s.eqfilter,tp,LOCATION_GRAVE,0,1,1,nil)
+		g:Merge(sg)
+		ft=ft-1
 	end
-	Duel.SetOperationInfo(0,CATEGORY_EQUIP,nil,1,tp,LOCATION_GRAVE+LOCATION_MZONE)
+	if ft>0 and Duel.IsExistingTarget(s.oppfilter,tp,0,LOCATION_MZONE,1,nil)
+		and (#g==0 or Duel.SelectYesNo(tp,aux.Stringid(id,3))) then
+		local sg=Duel.SelectTarget(tp,s.oppfilter,tp,0,LOCATION_MZONE,1,1,nil)
+		g:Merge(sg)
+	end
+	Duel.SetOperationInfo(0,CATEGORY_EQUIP,g,#g,0,0)
+	local gy=g:Filter(Card.IsLocation,nil,LOCATION_GRAVE)
+	if #gy>0 then
+		Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,gy,#gy,0,0)
+	end
 end
-
 function s.eqop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	local tc=Duel.GetFirstTarget()
-	if not c:IsRelateToEffect(e) or c:IsFacedown() or not tc or not tc:IsRelateToEffect(e) then return end
-	if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 then return end
-	if not Duel.Equip(tp,tc,c,false,true) then return end
-	local e1=Effect.CreateEffect(c)
-	e1:SetType(EFFECT_TYPE_SINGLE)
-	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_OWNER_RELATE)
-	e1:SetCode(EFFECT_EQUIP_LIMIT)
-	e1:SetReset(RESET_EVENT+RESETS_STANDARD)
-	e1:SetValue(s.eqlimit)
-	tc:RegisterEffect(e1)
+	if c:IsFacedown() or not c:IsRelateToEffect(e) then return end
+	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS)
+	if not g then return end
+	local sg=g:Filter(Card.IsRelateToEffect,nil,e)
+	if #sg==0 or Duel.GetLocationCount(tp,LOCATION_SZONE)<#sg then return end
+	local tc=sg:GetFirst()
+	while tc do
+		if tc:IsType(TYPE_MONSTER) and not tc:IsForbidden() and Duel.Equip(tp,tc,c,false) then
+			local e1=Effect.CreateEffect(c)
+			e1:SetType(EFFECT_TYPE_SINGLE)
+			e1:SetProperty(EFFECT_FLAG_OWNER_RELATE)
+			e1:SetCode(EFFECT_EQUIP_LIMIT)
+			e1:SetReset(RESET_EVENT+RESETS_STANDARD)
+			e1:SetValue(s.eqlimit)
+			tc:RegisterEffect(e1)
+		end
+		tc=sg:GetNext()
+	end
+	Duel.EquipComplete()
 end
-
 function s.eqlimit(e,c)
 	return e:GetOwner()==c
 end
-
-function s.eqmfilter(c)
-	return c:IsFaceup() and c:IsSetCard(0x29)
+function s.eqstgfilter(c)
+	return c:IsFaceup() and c:IsSetCard(0x29) and c:IsType(TYPE_MONSTER)
 end
-
 function s.eqstg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and s.eqmfilter(chkc) end
+	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and s.eqstgfilter(chkc) end
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_SZONE)>0
-		and Duel.IsExistingTarget(s.eqmfilter,tp,LOCATION_MZONE,0,1,nil) end
+		and e:GetHandler():IsType(TYPE_MONSTER) and not e:GetHandler():IsForbidden()
+		and Duel.IsExistingTarget(s.eqstgfilter,tp,LOCATION_MZONE,0,1,nil) end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)
-	Duel.SelectTarget(tp,s.eqmfilter,tp,LOCATION_MZONE,0,1,1,nil)
+	Duel.SelectTarget(tp,s.eqstgfilter,tp,LOCATION_MZONE,0,1,1,nil)
 	Duel.SetOperationInfo(0,CATEGORY_EQUIP,e:GetHandler(),1,0,0)
 end
-
 function s.eqsop(e,tp,eg,ep,ev,re,r,rp)
+	if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 then return end
 	local c=e:GetHandler()
 	local tc=Duel.GetFirstTarget()
-	if not c:IsRelateToEffect(e) or not tc or not tc:IsRelateToEffect(e) or not tc:IsFaceup() then return end
-	if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 then return end
-	Duel.Equip(tp,c,tc)
-	local e1=Effect.CreateEffect(tc)
-	e1:SetType(EFFECT_TYPE_SINGLE)
-	e1:SetCode(EFFECT_EQUIP_LIMIT)
-	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
-	e1:SetReset(RESET_EVENT+RESETS_STANDARD)
-	e1:SetValue(s.eqlimit)
-	c:RegisterEffect(e1)
+	if c:IsRelateToEffect(e) and tc:IsRelateToEffect(e) and tc:IsFaceup() and not c:IsForbidden() then
+		if not Duel.Equip(tp,c,tc) then return end
+		local e1=Effect.CreateEffect(tc)
+		e1:SetType(EFFECT_TYPE_SINGLE)
+		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
+		e1:SetCode(EFFECT_EQUIP_LIMIT)
+		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
+		e1:SetValue(s.eqlimit)
+		c:RegisterEffect(e1)
+	end
 end
 
 --[[
