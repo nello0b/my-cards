@@ -60,11 +60,11 @@ function s.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local g=Duel.SelectTarget(tp,s.eqtgfilter,tp,LOCATION_GRAVE,LOCATION_MZONE,1,1,nil,tp)
 	if ft>1 then
 		local tc=g:GetFirst()
-		if tc and tc:IsLocation(LOCATION_GRAVE) and b2 and Duel.SelectYesNo(tp,aux.Stringid(id,0)) then
+		if tc and tc:IsLocation(LOCATION_GRAVE) and b2 and Duel.SelectYesNo(tp,aux.Stringid(id,2)) then
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)
 			local sg=Duel.SelectTarget(tp,s.oppfilter,tp,0,LOCATION_MZONE,1,1,nil)
 			g:Merge(sg)
-		elseif tc and tc:IsLocation(LOCATION_MZONE) and b1 and Duel.SelectYesNo(tp,aux.Stringid(id,0)) then
+		elseif tc and tc:IsLocation(LOCATION_MZONE) and b1 and Duel.SelectYesNo(tp,aux.Stringid(id,2)) then
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)
 			local sg=Duel.SelectTarget(tp,s.eqfilter,tp,LOCATION_GRAVE,0,1,1,nil)
 			g:Merge(sg)
