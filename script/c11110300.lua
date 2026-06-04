@@ -1,3 +1,4 @@
+-- Dragunity Bayonet
 local s,id,o=GetID()
 function s.initial_effect(c)
     --special summon from deck on normal summon
@@ -29,7 +30,6 @@ function s.initial_effect(c)
 	e3:SetType(EFFECT_TYPE_IGNITION)
 	e3:SetRange(LOCATION_SZONE)
 	e3:SetCountLimit(1,id+2)
-	e3:SetCondition(s.spcon)
 	e3:SetTarget(s.sptg2)
 	e3:SetOperation(s.spop2)
 	c:RegisterEffect(e3)
@@ -111,13 +111,10 @@ function s.eqop(e,tp,eg,ep,ev,re,r,rp)
 	Duel.EquipComplete()
 end
 
-function s.spcon(e,tp,eg,ep,ev,re,r,rp)
-	return e:GetHandler():GetEquipTarget()~=nil
-end
-
 function s.sptg2(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and c:IsCanBeSpecialSummoned(e,0,tp,false,false) end
+	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
+		and c:GetEquipTarget() and c:IsCanBeSpecialSummoned(e,0,tp,false,false) end
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,c,1,0,0)
 end
 
