@@ -44,28 +44,27 @@ end
 function s.oppfilter(c)
 	return c:IsFaceup() and c:IsType(TYPE_MONSTER) and not c:IsForbidden()
 end
+function s.eqtgfilter(c,tp)
+	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS)
+	if c:IsControler(tp) and c:IsLocation(LOCATION_GRAVE) and s.eqfilter(c) then
+		return not g or not g:IsExists(Card.IsControler,1,nil,tp)
+	end
+	if c:IsControler(1-tp) and c:IsLocation(LOCATION_MZONE) and s.oppfilter(c) then
+		return not g or not g:IsExists(Card.IsControler,1,nil,1-tp)
+	end
+	return false
+end
 function s.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then
-		return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and s.eqfilter(chkc)
-			or chkc:IsControler(1-tp) and chkc:IsLocation(LOCATION_MZONE) and s.oppfilter(chkc)
+		return s.eqtgfilter(chkc,tp)
 	end
 	local ft=Duel.GetLocationCount(tp,LOCATION_SZONE)
 	if chk==0 then return ft>0
 		and (Duel.IsExistingTarget(s.eqfilter,tp,LOCATION_GRAVE,0,1,nil)
 			or Duel.IsExistingTarget(s.oppfilter,tp,0,LOCATION_MZONE,1,nil)) end
-	local g=Group.CreateGroup()
+	local max=math.min(ft,2)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)
-	if ft>0 and Duel.IsExistingTarget(s.eqfilter,tp,LOCATION_GRAVE,0,1,nil)
-		and (not Duel.IsExistingTarget(s.oppfilter,tp,0,LOCATION_MZONE,1,nil) or Duel.SelectYesNo(tp,aux.Stringid(id,2))) then
-		local sg=Duel.SelectTarget(tp,s.eqfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-		g:Merge(sg)
-		ft=ft-1
-	end
-	if ft>0 and Duel.IsExistingTarget(s.oppfilter,tp,0,LOCATION_MZONE,1,nil)
-		and (#g==0 or Duel.SelectYesNo(tp,aux.Stringid(id,3))) then
-		local sg=Duel.SelectTarget(tp,s.oppfilter,tp,0,LOCATION_MZONE,1,1,nil)
-		g:Merge(sg)
-	end
+	local g=Duel.SelectTarget(tp,s.eqtgfilter,tp,LOCATION_GRAVE,LOCATION_MZONE,1,max,nil,tp)
 	Duel.SetOperationInfo(0,CATEGORY_EQUIP,g,#g,0,0)
 	local gy=g:Filter(Card.IsLocation,nil,LOCATION_GRAVE)
 	if #gy>0 then
