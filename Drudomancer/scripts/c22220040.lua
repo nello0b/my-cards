@@ -38,6 +38,8 @@ function s.indtg(e,c)
 	return c==tc or c==tc:GetBattleTarget()
 end
 function s.public(c)
+	c:RegisterFlagEffect(id,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,
+		EFFECT_FLAG_CLIENT_HINT,1,0,66)
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_PUBLIC)
