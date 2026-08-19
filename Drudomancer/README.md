@@ -4,7 +4,11 @@ This folder contains the Drudomancer custom card expansion for MDPro3/Omega.
 
 ## Download
 
-[Download Drudomancer.ypk](https://github.com/nello0b/my-cards/raw/refs/heads/main/Drudomancer/Drudomancer.ypk)
+Direct `.ypk` link:
+
+```link
+https://github.com/nello0b/my-cards/raw/refs/heads/main/Drudomancer/Drudomancer.ypk
+```
 
 ## Install
 
