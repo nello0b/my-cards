@@ -73,8 +73,7 @@ function s.relcon(e,tp,eg,ep,ev,re,r,rp)
 	return Duel.IsExistingMatchingCard(s.pubfilter,tp,LOCATION_HAND,0,1,nil)
 end
 function s.sumlimit(e,c)
-	return not (c:IsLocation(LOCATION_HAND) and c:IsPublic()
-		and c:IsSetCard(0xdad) and c:IsType(TYPE_MONSTER))
+	return not (c:IsPublic() and c:IsSetCard(0xdad) and c:IsType(TYPE_MONSTER))
 end
 function s.retcon(e,tp,eg,ep,ev,re,r,rp)
 	local a=Duel.GetAttacker()
