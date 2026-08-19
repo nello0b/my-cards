@@ -28,15 +28,6 @@ function s.initial_effect(c)
 	e2:SetCountLimit(1)
 	e2:SetCondition(s.relcon)
 	c:RegisterEffect(e2)
-	--The monster being Tribute Summoned must itself be a revealed Drudomancer
-	local e2b=Effect.CreateEffect(c)
-	e2b:SetType(EFFECT_TYPE_FIELD)
-	e2b:SetCode(EFFECT_UNRELEASABLE_SUM)
-	e2b:SetRange(LOCATION_SZONE)
-	e2b:SetTargetRange(0,LOCATION_MZONE)
-	e2b:SetProperty(EFFECT_FLAG_SET_AVAILABLE+EFFECT_FLAG_IGNORE_IMMUNE)
-	e2b:SetValue(s.sumlimit)
-	c:RegisterEffect(e2b)
 	--Return both monsters to the hand after an Illusion monster battled
 	local e3=Effect.CreateEffect(c)
 	e3:SetCategory(CATEGORY_TOHAND)
@@ -71,9 +62,6 @@ function s.pubfilter(c)
 end
 function s.relcon(e,tp,eg,ep,ev,re,r,rp)
 	return Duel.IsExistingMatchingCard(s.pubfilter,tp,LOCATION_HAND,0,1,nil)
-end
-function s.sumlimit(e,c)
-	return not (c:IsPublic() and c:IsSetCard(0xdad) and c:IsType(TYPE_MONSTER))
 end
 function s.retcon(e,tp,eg,ep,ev,re,r,rp)
 	local a=Duel.GetAttacker()
