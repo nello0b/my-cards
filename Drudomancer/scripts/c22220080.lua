@@ -85,16 +85,17 @@ end
 function s.rettg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local a=Duel.GetAttacker()
 	local d=Duel.GetAttackTarget()
-	if chk==0 then return a and d and a:IsAbleToHand() and d:IsAbleToHand() end
+	if chk==0 then return a and d end
 	local g=Group.FromCards(a,d)
-	e:SetLabelObject(g)
-	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,2,0,0)
+	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,g:GetCount(),0,0)
 end
 function s.retop(e,tp,eg,ep,ev,re,r,rp)
-	local g=e:GetLabelObject()
-	if not g then return end
-	g=g:Filter(Card.IsRelateToBattle,nil)
-	if #g==2 then Duel.SendtoHand(g,nil,REASON_EFFECT) end
+	local g=Group.CreateGroup()
+	local c=Duel.GetAttacker()
+	if c and c:IsRelateToBattle() then g:AddCard(c) end
+	c=Duel.GetAttackTarget()
+	if c and c:IsRelateToBattle() then g:AddCard(c) end
+	if g:GetCount()>0 then Duel.SendtoHand(g,nil,REASON_EFFECT) end
 end
 
 --[[
