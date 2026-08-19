@@ -21,7 +21,7 @@ ART_FOLDER = BASE_FOLDER / "art"
 DECK_FOLDER = BASE_FOLDER / "deck"
 DB_FILE = BASE_FOLDER / "Drudomancer-Custom-Cards.cdb"
 TEST_STRINGS = BASE_FOLDER / "test-strings.conf"
-FINAL_NAME = BASE_FOLDER / "DrudomancerCustom.ypk"
+FINAL_NAME = BASE_FOLDER / "Drudomancer.ypk"
 
 
 def build_ypk(
