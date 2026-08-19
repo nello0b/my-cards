@@ -1,10 +1,9 @@
 """Create a YPK by copying a template and replacing files.
 
 This script treats .ypk files as ZIP archives (the game's YPK format is ZIP-like).
-It copies `Empty Model.ypk`, replaces the `script/` folder contents, replaces the
-`custom.cdb` file, adds `test-strings.conf`, replaces the `pack/` folder contents
-with the top-level files from the local `deck/` folder, and writes the result to
-`OmegaCustom.ypk`.
+It copies `Empty Model.ypk`, replaces the `script/` folder contents with files
+from local `scripts/`, replaces `custom.cdb`, adds `test-strings.conf`, adds any
+local artwork, and writes the result to `Drudomancer.ypk`.
 
 Usage: run directly in this folder. Adjust constants below if needed.
 """
@@ -15,13 +14,14 @@ import shutil
 import sys
 
 
-TEMPLATE = Path("Empty Model.ypk")
-SCRIPT_FOLDER = Path("script")
-ART_FOLDER = Path("art")
-DECK_FOLDER = Path("deck")
-DB_FILE = Path("Drudomancer-Custom-Cards.cdb")
-TEST_STRINGS = Path("test-strings.conf")
-FINAL_NAME = Path("Drudomancer.ypk")
+BASE_FOLDER = Path(__file__).resolve().parent
+TEMPLATE = BASE_FOLDER / "Empty Model.ypk"
+SCRIPT_FOLDER = BASE_FOLDER / "scripts"
+ART_FOLDER = BASE_FOLDER / "art"
+DECK_FOLDER = BASE_FOLDER / "deck"
+DB_FILE = BASE_FOLDER / "Drudomancer-Custom-Cards.cdb"
+TEST_STRINGS = BASE_FOLDER / "test-strings.conf"
+FINAL_NAME = BASE_FOLDER / "DrudomancerCustom.ypk"
 
 
 def build_ypk(
