@@ -26,7 +26,7 @@ function s.initial_effect(c)
 	e2:SetTargetRange(0,LOCATION_MZONE)
 	e2:SetProperty(EFFECT_FLAG_SET_AVAILABLE)
 	e2:SetCountLimit(1)
-	e2:SetCondition(s.relcon)
+	e2:SetTarget(s.reltg)
 	c:RegisterEffect(e2)
 	--Return both monsters to the hand after an Illusion monster battled
 	local e3=Effect.CreateEffect(c)
@@ -60,7 +60,8 @@ end
 function s.pubfilter(c)
 	return c:IsPublic() and c:IsSetCard(0xdad) and c:IsType(TYPE_MONSTER)
 end
-function s.relcon(e,tp,eg,ep,ev,re,r,rp)
+function s.reltg(e,c)
+	local tp=e:GetHandlerPlayer()
 	return Duel.IsExistingMatchingCard(s.pubfilter,tp,LOCATION_HAND,0,1,nil)
 end
 function s.retcon(e,tp,eg,ep,ev,re,r,rp)
