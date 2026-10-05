@@ -47,7 +47,6 @@ end
 function s.placetg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
 		return Duel.GetLocationCount(tp,LOCATION_SZONE)>0
-			and Duel.GetLocationCount(tp,LOCATION_FZONE)>0
 			and Duel.IsExistingMatchingCard(s.stadiumfilter,tp,LOCATION_DECK,0,1,nil)
 	end
 	Duel.SetOperationInfo(0,CATEGORY_TOFIELD,e:GetHandler(),1,tp,LOCATION_HAND)
@@ -55,8 +54,7 @@ function s.placetg(e,tp,eg,ep,ev,re,r,rp,chk)
 end
 function s.placeop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 or Duel.GetLocationCount(tp,LOCATION_FZONE)<=0
-		or not c:IsRelateToEffect(e) then return end
+	if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 or not c:IsRelateToEffect(e) then return end
 	if Duel.MoveToField(c,tp,tp,LOCATION_SZONE,POS_FACEUP,true) then
 		local ce=Effect.CreateEffect(c)
 		ce:SetCode(EFFECT_CHANGE_TYPE)
@@ -65,6 +63,11 @@ function s.placeop(e,tp,eg,ep,ev,re,r,rp)
 		ce:SetReset(RESET_EVENT+RESETS_STANDARD-RESET_TURN_SET)
 		ce:SetValue(TYPE_TRAP+TYPE_CONTINUOUS)
 		c:RegisterEffect(ce)
+		local fc=Duel.GetFieldCard(tp,LOCATION_FZONE,0)
+		if fc then
+			Duel.SendtoGrave(fc,REASON_RULE)
+			Duel.BreakEffect()
+		end
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOFIELD)
 		local g=Duel.SelectMatchingCard(tp,s.stadiumfilter,tp,LOCATION_DECK,0,1,1,nil)
 		local tc=g:GetFirst()
