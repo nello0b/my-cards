@@ -102,9 +102,9 @@ function s.setcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetType()==TYPE_SPELL+TYPE_CONTINUOUS
 end
 function s.setfilter(c,tp,ec)
-	return c~=ec and c:IsFaceup() and c:IsSetCard(SET_ANGELECHY)
+	return c:IsFaceup() and c:IsSetCard(SET_ANGELECHY)
 		and bit.band(c:GetOriginalType(),TYPE_MONSTER)~=0
-		and c:GetOwner()==tp and c:IsAbleToExtra()
+		and c:GetOwner()==tp
 end
 function s.settg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
