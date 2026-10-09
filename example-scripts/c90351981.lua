@@ -38,3 +38,11 @@ function c90351981.thop(e,tp,eg,ep,ev,re,r,rp)
 		Duel.SendtoHand(e:GetHandler(),nil,REASON_EFFECT)
 	end
 end
+
+--[[
+1 Tuner + 1+ non-Tuners
+(Quick Effect): You can target 1 card your opponent controls; banish it.
+If this card is placed in the Spell & Trap Zone as a Continuous Spell: You can return 1 "Angelechy" Monster Card you own from your Spell & Trap Zone to the Extra Deck, then you can Special Summon it.
+You can only use each of the preceding effects of "Angelechy Imperatrix" once per turn.
+While this card is treated as a Continuous Spell, your opponent can only Special Summon monsters from their hand once per turn.
+]]

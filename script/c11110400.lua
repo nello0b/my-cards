@@ -2,6 +2,15 @@
 local s,id,o=GetID()
 local SET_ANGELECHY=0x1e2
 
+-- Register this card as the Angelechy "become Quick Effect" marker.
+if Auxiliary and Auxiliary.quick_effect_filter then
+	Auxiliary.quick_effect_filter[id]=function(c)
+		return c:IsOriginalSetCard(SET_ANGELECHY)
+			and c:IsLocation(LOCATION_MZONE)
+			and c:IsType(TYPE_SYNCHRO+TYPE_MONSTER)
+	end
+end
+
 function s.initial_effect(c)
 	-- Synchro Summon
 	aux.AddSynchroProcedure(c,nil,aux.NonTuner(nil),1)
@@ -47,10 +56,18 @@ function s.initial_effect(c)
 	e4:SetTarget(s.settg)
 	e4:SetOperation(s.setop)
 	c:RegisterEffect(e4)
-
-	-- The original card text grants Quick Effect timing to Angelechy Synchro
-	-- effects while this card is a Continuous Spell. The affected Synchro
-	-- scripts must expose their effects as Quick Effects for this clause.
+	-- Mark eligible Angelechy Synchro Monsters as able to use their
+	-- Quick Effect versions.
+	local e5=Effect.CreateEffect(c)
+	e5:SetType(EFFECT_TYPE_FIELD)
+	e5:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+	e5:SetCode(id)
+	e5:SetRange(LOCATION_SZONE)
+	-- IsCanBeQuickEffect checks whether this player is affected by the marker.
+	-- The card eligibility is handled by Auxiliary.quick_effect_filter above,
+	-- just like Orcustrated Babel and Golden Allure Queen.
+	e5:SetTargetRange(1,0)
+	c:RegisterEffect(e5)
 end
 
 function s.rmtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
@@ -108,3 +125,11 @@ function s.setop(e,tp,eg,ep,ev,re,r,rp)
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
+
+--[[
+1 Tuner + 1+ non-Tuners
+You can target 1 card your opponent controls; banish it.
+If this card is placed in the Spell & Trap Zone as a Continuous Spell: You can return 1 "Angelechy" Monster Card you own from your Spell & Trap Zone to the Extra Deck, then you can Special Summon it.
+You can only use each of the preceding effects of "Angelechy Imperatrix" once per turn.
+While this card is treated as a Continuous Spell, you can activate the effects of Synchro Monsters you control with "Angelechy" in their original names, as Quick Effects.
+]]
