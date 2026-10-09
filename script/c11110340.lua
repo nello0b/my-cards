@@ -25,8 +25,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e2)
 end
 
-function s.discardfilter(c)
-	return c:IsRace(RACE_ZOMBIE) and c:IsDiscardable()
+function s.discardfilter(c,ex)
+	return c~=ex and c:IsRace(RACE_ZOMBIE) and c:IsDiscardable()
 end
 function s.tgcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
@@ -52,8 +52,8 @@ function s.tgop(e,tp,eg,ep,ev,re,r,rp)
 	end
 end
 
-function s.rmfilter(c)
-	return c:IsRace(RACE_ZOMBIE) and c:IsType(TYPE_MONSTER) and c:IsAbleToRemoveAsCost()
+function s.rmfilter(c,ex)
+	return c~=ex and c:IsRace(RACE_ZOMBIE) and c:IsType(TYPE_MONSTER) and c:IsAbleToRemoveAsCost()
 end
 function s.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
